@@ -1,5 +1,5 @@
-const cardTemplate = document.querySelector('#card-template').content; //забираем шаблон карточки
-const cardsList = document.querySelector('.places__list'); //забираем список карточек из DOM
+import { cardTemplate } from './index.js';
+import { openFullImage } from './modal.js';
 
 function createCard(item, deleteCard) {
   const cardElement = cardTemplate.querySelector('.card').cloneNode(true); //клонируем элемент карточки из шаблона в переменную
@@ -11,18 +11,25 @@ function createCard(item, deleteCard) {
   delButton.addEventListener('click', () => {
     deleteCard(delButton); //по клику выполняем функцию удаления с аргументом-кнопкой
   });
+  cardElement.addEventListener('click', likeCard);
+  cardElement.addEventListener('click', checkImage);
   return cardElement; //возвращаем элемент карточки
-}
-
-function addCard(cardElement) {
-  cardsList.append(cardElement); //добавляем готовую карточку из переменной в DOM
 }
 
 function deleteCard(button) {
   button.closest('.card').remove(); //удаляем ближайший к кнопке-аргументу элемент карточки
 }
 
-initialCards.forEach((element) => {
-  const cardElement = createCard(element, deleteCard); //создаем карточку для каждого элемента из массива в cards.js, забирая из элементов имена и ссылки
-  addCard(cardElement); //добавляем созданные карточки на страницу
-});
+function likeCard(evt) {
+  if (evt.target.classList.contains('card__like-button')) {
+    evt.target.classList.toggle('card__like-button_is-active');
+  }
+}
+
+function checkImage(evt) {
+  if (evt.target.classList.contains('card__image')) {
+    openFullImage(evt.target);
+  }
+}
+
+export { createCard, deleteCard, likeCard, checkImage };
