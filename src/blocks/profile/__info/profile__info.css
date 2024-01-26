@@ -4,6 +4,7 @@
   "description description";
   grid-template-columns: minmax(auto, 295px) auto;
   grid-gap: 9px 17px;
+  max-inline-size: 60%;
 }
 
 @media screen and (max-width: 740px) {
