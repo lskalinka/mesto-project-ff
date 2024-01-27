@@ -17,13 +17,13 @@ function closePopupEscape(evt) {
 
 function closePopupButton(evt) {
   if (evt.target === evt.target.closest('.popup__close')) {
-    const popup = document.querySelector('.popup_is-opened');
+    const popup = document.querySelector('.popup_is-opened'); //записываем в локальную переменную открытый попап
     closePopup(popup); //при клике по крестику выполняем функцию закрытия попапа
   }
 };
 
 function closePopupOverlay(evt) {
-  const popup = document.querySelector('.popup_is-opened');
+  const popup = document.querySelector('.popup_is-opened'); //записываем в локальную переменную открытый попап
   if (popup === evt.target) {    
     closePopup(popup); //при клике по оверлею выполняем функцию закрытия попапа
   }};

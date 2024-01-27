@@ -25,6 +25,8 @@ const inputDescriptionFormProfile = document.forms['edit-profile'].description; 
 const inputTitleFormAddNewCard = document.forms['new-place']['place-name']; //забираем поле с названием карточки
 const inputLinkFormAddNewCard = document.forms['new-place'].link; //забираем поле со ссылкой на картинку
 const popupImageCaption= document.querySelector('.popup__caption');
+const popupCloseButtons = document.querySelectorAll('.popup__close');
+const popups = document.querySelectorAll('.popup');
 
 function addCard(cardElement) {
   cardsList.prepend(cardElement); //добавляем готовую карточку из переменной в DOM
@@ -74,9 +76,13 @@ function cardFormSubmit(evt) {
   closePopup(popupAddCard); //вызывааем функцию закрытия попапа
 }
 
-document.addEventListener('click', closePopupButton);
+popupCloseButtons.forEach(function (item) {
+  item.addEventListener('click', closePopupButton);
+});
 
-document.addEventListener('click', closePopupOverlay);
+popups.forEach(function (item) {
+  item.addEventListener('click', closePopupOverlay);
+});
 
 export {
   cardTemplate
