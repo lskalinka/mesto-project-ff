@@ -1,0 +1,11 @@
+.popup__button-isunactive {
+  opacity: 0.2;
+  border: 1px solid #000000;
+  background: #fff;
+  color: black;
+}
+
+.popup__button-isunactive:hover {
+  background: #fff;
+  cursor: auto;
+}
