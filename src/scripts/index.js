@@ -19,6 +19,7 @@ const popupImage = document.querySelector('.popup_type_image'); //забирае
 const fullImage = document.querySelector('.popup__image'); //забираем элемент картинки попапа
 const userName = document.querySelector('.profile__title'); //забираем поле с именем пользователя
 const userDescription = document.querySelector('.profile__description'); //забираем поле с описанием пользователя
+const userAvatar = document.querySelector('.profile__image');
 const editProfileForm = document.forms['edit-profile']; //забираем форму редактирования профиля
 const addCardForm = document.forms['new-place']; //забираем форму добавления новой карточки
 const inputNameFormProfile = document.forms['edit-profile'].name; //забираем поле редактирования имени
@@ -100,3 +101,19 @@ enableValidation(validationConfig); //включаем валидацию с н�
 export {
   cardTemplate
 }; //экспортируем глобальную переменную и функцию открытия большой картинки
+
+
+fetch('https://nomoreparties.co/v1/wff-cohort-7/users/me', {
+    headers: {
+      authorization: '32604bc8-d2fc-4c7c-8464-5a6bd2456ba1'
+    }
+  })
+  .then((res) => {
+    return res.json(); 
+  })
+  .then((result) => {
+    userName.textContent = result['name'];
+    userDescription.textContent = result['about'];
+    userAvatar.style.backgroundImage = "url(" + result['avatar'] + ")"
+  });
+

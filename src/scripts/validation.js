@@ -14,7 +14,11 @@ const hideInputError = (formElement, inputElement, validationConfig) => {
 
 const checkInputValidity = (formElement, inputElement, validationConfig) => {
   if (inputElement.validity.patternMismatch) { //если ошибка валидации связана с заданным паттерном
-  inputElement.setCustomValidity("Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"); //то выводим кастомное сообщение об ошибке
+    if (inputElement.classList.contains('popup__input_type_url')) { //если поле с ошибкой — это поле, куда вставляется ссылка на картинку
+      inputElement.setCustomValidity("Вставьте ссылку, которая ведет на изображение"); //то выводим кастомное сообщение об ошибке именно для этого поля
+    } else { //если поле с ошибкой любое другое
+      inputElement.setCustomValidity("Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"); //то выводим кастомное сообщение об ошибке для остальных полей
+    }
   } else { 
   inputElement.setCustomValidity(""); //иначе возвращаем стандартный текст
   }
