@@ -7,6 +7,7 @@ import {
   closePopupButton,
   closePopupOverlay
 } from './modal.js'; //импортируем функции для работы попапов
+import { clearValidation, enableValidation } from './validation.js'; //импортируем функции для очистки ошибок и валидации полей
 
 const cardsList = document.querySelector('.places__list'); //забираем список карточек из DOM
 const cardTemplate = document.querySelector('#card-template').content; //забираем шаблон карточки
@@ -24,9 +25,17 @@ const inputNameFormProfile = document.forms['edit-profile'].name; //забира
 const inputDescriptionFormProfile = document.forms['edit-profile'].description; //забираем поле редактирования описания
 const inputTitleFormAddNewCard = document.forms['new-place']['place-name']; //забираем поле с названием карточки
 const inputLinkFormAddNewCard = document.forms['new-place'].link; //забираем поле со ссылкой на картинку
-const popupImageCaption= document.querySelector('.popup__caption');
-const popupCloseButtons = document.querySelectorAll('.popup__close');
-const popups = document.querySelectorAll('.popup');
+const popupImageCaption= document.querySelector('.popup__caption'); //забираем подпись к большой картинке на попапе
+const popupCloseButtons = document.querySelectorAll('.popup__close'); //забираем массив кнопок закрытия попапов
+const popups = document.querySelectorAll('.popup'); //забираем массив попапов
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button-isunactive',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__input-error_active'
+}; //забираем настройки валидации
 
 function addCard(cardElement) {
   cardsList.prepend(cardElement); //добавляем готовую карточку из переменной в DOM
@@ -44,6 +53,7 @@ editProfileForm.addEventListener('submit', profileFormSubmit); //вешаем с
 editProfileButton.addEventListener('click', () => {
   inputNameFormProfile.value = userName.textContent; //записываем в поле попапа с именем текущее значение имени
   inputDescriptionFormProfile.value = userDescription.textContent; //записываем в поле попапа с описанием текущее значение описания
+  clearValidation(editProfileForm, validationConfig); //очищаем ошибки, оставшиеся с прошлого открытия
   openPopup(popupEdit); //запускаем функцию открытия попапа редактирования профиля
 });
 
@@ -73,28 +83,20 @@ function cardFormSubmit(evt) {
   const cardElement = createCard(item, deleteCard, likeCard, openFullImage); //создаем элемент карточки с помощью функции создания карточки, на вход принимает созданный объект и коллбэк удаления карточки
   addCard(cardElement); //добавляем созданный элемент на страницу
   addCardForm.reset(); //очищаем поля формы
+  clearValidation(addCardForm, validationConfig); //очищаем ошибки с прошлого открытия, делаем кнопку неактивной
   closePopup(popupAddCard); //вызывааем функцию закрытия попапа
 }
 
 popupCloseButtons.forEach(function (item) {
-  item.addEventListener('click', closePopupButton);
+  item.addEventListener('click', closePopupButton); //на каждую кнопку-крестик попапа вешаем слушатель, который вызывает функцию закрытия попапа по клику
 });
 
 popups.forEach(function (item) {
-  item.addEventListener('click', closePopupOverlay);
+  item.addEventListener('click', closePopupOverlay); //на каждый попап (точнее, на его оверлей) вешаем слушатель, который вызывает функцию закрытия попапа по клику
 });
+
+enableValidation(validationConfig); //включаем валидацию с настройками из переменной
 
 export {
   cardTemplate
 }; //экспортируем глобальную переменную и функцию открытия большой картинки
-
-
-const showInputError = (formElement, inputElement, errorMessage) => {
-  const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.add('form__input_type_error');
-  errorElement.textContent = errorMessage;
-  errorElement.classList.add('form__input-error_active');
-};
-
-
-

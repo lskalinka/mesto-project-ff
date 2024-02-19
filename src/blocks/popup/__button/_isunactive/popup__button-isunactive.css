@@ -3,6 +3,7 @@
   border: 1px solid #000000;
   background: #fff;
   color: black;
+  pointer-events: none;
 }
 
 .popup__button-isunactive:hover {

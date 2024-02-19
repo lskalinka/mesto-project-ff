@@ -3,8 +3,11 @@
 @import url('./__close/popup__close.css');
 @import url('./__title/popup__title.css');
 @import url('./__form/popup__form.css');
+@import url('./__formfield/popup__formfield.css');
 @import url('./__input/popup__input.css');
+@import url('./__input/_type/popup__input_type_error.css');
 @import url('./__input/-error/popup__input-error.css');
+@import url('./__input/-error/popup__input-error_active.css');
 @import url('./__button/popup__button.css');
 @import url('./__button/_isunactive/popup__button-isunactive.css');
 @import url('./__caption/popup__caption.css');
@@ -24,5 +27,4 @@
   bottom: 0;
   right: 0;
   z-index: 10;
-
 }
