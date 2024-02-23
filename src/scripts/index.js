@@ -1,13 +1,19 @@
 import '../pages/index.css'; //импортируем файл со всеми стилями
-import { initialCards } from './cards.js'; //импортируем массив с первыми 6 карточками
 import { createCard, deleteCard, likeCard } from './card.js'; //импортируем функции для работы с карточками
 import {
   openPopup,
   closePopup,
   closePopupButton,
-  closePopupOverlay
+  closePopupOverlay,
 } from './modal.js'; //импортируем функции для работы попапов
 import { clearValidation, enableValidation } from './validation.js'; //импортируем функции для очистки ошибок и валидации полей
+import {
+  patchServerProfile,
+  postServerCard,
+  patchServerAvatar,
+  getServerProfile,
+  getServerCards,
+} from './api.js';
 
 const cardsList = document.querySelector('.places__list'); //забираем список карточек из DOM
 const cardTemplate = document.querySelector('#card-template').content; //забираем шаблон карточки
@@ -22,30 +28,30 @@ const userDescription = document.querySelector('.profile__description'); //за�
 const userAvatar = document.querySelector('.profile__image');
 const editProfileForm = document.forms['edit-profile']; //забираем форму редактирования профиля
 const addCardForm = document.forms['new-place']; //забираем форму добавления новой карточки
+const editAvatarForm = document.forms['edit-avatar']; //забираем форму редактирования аватара
+const inputAvatarFormLink = document.forms['edit-avatar']['link-avatar'];
 const inputNameFormProfile = document.forms['edit-profile'].name; //забираем поле редактирования имени
 const inputDescriptionFormProfile = document.forms['edit-profile'].description; //забираем поле редактирования описания
 const inputTitleFormAddNewCard = document.forms['new-place']['place-name']; //забираем поле с названием карточки
 const inputLinkFormAddNewCard = document.forms['new-place'].link; //забираем поле со ссылкой на картинку
-const popupImageCaption= document.querySelector('.popup__caption'); //забираем подпись к большой картинке на попапе
+const popupImageCaption = document.querySelector('.popup__caption'); //забираем подпись к большой картинке на попапе
 const popupCloseButtons = document.querySelectorAll('.popup__close'); //забираем массив кнопок закрытия попапов
 const popups = document.querySelectorAll('.popup'); //забираем массив попапов
+const editAvatarButton = document.querySelector('.profile__image-edit-button');
+const popupEditAvatar = document.querySelector('.popup_type_edit-avatar');
+
 const validationConfig = {
   formSelector: '.popup__form',
   inputSelector: '.popup__input',
   submitButtonSelector: '.popup__button',
   inactiveButtonClass: 'popup__button-isunactive',
   inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__input-error_active'
+  errorClass: 'popup__input-error_active',
 }; //забираем настройки валидации
 
 function addCard(cardElement) {
   cardsList.prepend(cardElement); //добавляем готовую карточку из переменной в DOM
 }
-
-initialCards.forEach((element) => {
-  const cardElement = createCard(element, deleteCard, likeCard, openFullImage); //создаем карточку для каждого элемента из массива в cards.js, забирая из элементов имена и ссылки
-  addCard(cardElement); //добавляем созданные карточки на страницу
-});
 
 addCardForm.addEventListener('submit', cardFormSubmit); //вешаем слушатель, который при отправке формы добавления карточки запускает функцию работы с данными формы
 
@@ -62,6 +68,12 @@ addCardButton.addEventListener('click', () => {
   openPopup(popupAddCard); //запускаем функцию открытия попапа добавления карточки
 });
 
+editAvatarButton.addEventListener('click', () => {
+  openPopup(popupEditAvatar); //запускаем функцию открытия попапа добавления карточки
+});
+
+editAvatarForm.addEventListener('submit', editAvatarFormSubmit);
+
 function openFullImage(evt) {
   openPopup(popupImage); //выполняем функцию открытия попапа
   fullImage.src = evt.target.closest('.card__image').src; //используем ссылку нажатой картинки в качестве ссылки для большой картинки
@@ -73,19 +85,58 @@ function profileFormSubmit(evt) {
   evt.preventDefault(); //отменяем стандартное поведение формы
   userName.textContent = inputNameFormProfile.value; //заполняем поле имени в профиле данными из поля имени в форме
   userDescription.textContent = inputDescriptionFormProfile.value; //заполняем поле описания в профиле данными из поля описания в форме
+  const button = evt.target.querySelector('.popup__button');
+  button.textContent = 'Сохранение...';
+  patchServerProfile(inputNameFormProfile, inputDescriptionFormProfile);
+  clearValidation(editProfileForm, validationConfig); //очищаем ошибки с прошлого открытия, делаем кнопку неактивной
   closePopup(popupEdit); //выполняем функцию закрытия попапа с формой
+  button.textContent = 'Сохранить';
 }
 
 function cardFormSubmit(evt) {
   evt.preventDefault(); //отменяем стандартное поведение формы
   const item = {}; //создаем пустой объект
+  item.likes = new Array();
   item.name = inputTitleFormAddNewCard.value; //записываем в свойство name объекта значение поля с названием карточки
   item.link = inputLinkFormAddNewCard.value; //записываем в свойство link объекта значение поля со ссылкой на картинку
-  const cardElement = createCard(item, deleteCard, likeCard, openFullImage); //создаем элемент карточки с помощью функции создания карточки, на вход принимает созданный объект и коллбэк удаления карточки
-  addCard(cardElement); //добавляем созданный элемент на страницу
+  const button = evt.target.querySelector('.popup__button');
+  button.textContent = 'Сохранение...';
+  postServerCard(item)
+    .then((res) => {
+      if (res.ok) {
+        return res.json();
+      }
+      return Promise.reject(`Ошибка: ${res.status}`);
+    })
+    .then((result) => {
+      const cardElement = createCard(
+        result,
+        deleteCard,
+        likeCard,
+        openFullImage
+      ); //создаем карточку для каждого элемента из массива в cards.js, забирая из элементов имена и ссылки
+      addCard(cardElement); //добавляем созданные карточки на страницу
+    })
+    .catch((err) => {
+      console.log(err); // выводим ошибку в консоль
+    });
+
   addCardForm.reset(); //очищаем поля формы
   clearValidation(addCardForm, validationConfig); //очищаем ошибки с прошлого открытия, делаем кнопку неактивной
   closePopup(popupAddCard); //вызывааем функцию закрытия попапа
+  button.textContent = 'Сохранить';
+}
+
+function editAvatarFormSubmit(evt) {
+  evt.preventDefault(); //отменяем стандартное поведение формы
+  userAvatar.style.backgroundImage = 'url(' + inputAvatarFormLink.value + ')';
+  const button = evt.target.querySelector('.popup__button');
+  button.textContent = 'Сохранение...';
+  patchServerAvatar(inputAvatarFormLink.value);
+  editAvatarForm.reset(); //очищаем поля формы
+  clearValidation(editAvatarForm, validationConfig); //очищаем ошибки с прошлого открытия, делаем кнопку неактивной
+  closePopup(popupEditAvatar); //вызывааем функцию закрытия попапа
+  button.textContent = 'Сохранить';
 }
 
 popupCloseButtons.forEach(function (item) {
@@ -98,22 +149,39 @@ popups.forEach(function (item) {
 
 enableValidation(validationConfig); //включаем валидацию с настройками из переменной
 
-export {
-  cardTemplate
-}; //экспортируем глобальную переменную и функцию открытия большой картинки
+const fetchProfile = getServerProfile().then((res) => {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(`Ошибка: ${res.status}`);
+});
 
+const fetchCards = getServerCards().then((res) => {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(`Ошибка: ${res.status}`);
+});
 
-fetch('https://nomoreparties.co/v1/wff-cohort-7/users/me', {
-    headers: {
-      authorization: '32604bc8-d2fc-4c7c-8464-5a6bd2456ba1'
-    }
+Promise.all([fetchProfile, fetchCards])
+  .then((results) => {
+    userName.textContent = results[0]['name'];
+    userName._id = results[0]['_id'];
+    userDescription.textContent = results[0]['about'];
+    userAvatar.style.backgroundImage = 'url(' + results[0]['avatar'] + ')';
+    results[1].reverse();
+    results[1].forEach((element) => {
+      const cardElement = createCard(
+        element,
+        deleteCard,
+        likeCard,
+        openFullImage
+      ); //создаем карточку для каждого элемента из массива в cards.js, забирая из элементов имена и ссылки
+      addCard(cardElement); //добавляем созданные карточки на страницу
+    });
   })
-  .then((res) => {
-    return res.json(); 
-  })
-  .then((result) => {
-    userName.textContent = result['name'];
-    userDescription.textContent = result['about'];
-    userAvatar.style.backgroundImage = "url(" + result['avatar'] + ")"
+  .catch((err) => {
+    console.log(err); // выводим ошибку в консоль
   });
 
+export { cardTemplate, addCard, userName }; //экспортируем глобальную переменную
