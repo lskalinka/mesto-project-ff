@@ -21,8 +21,7 @@ const checkInputValidity = (formElement, inputElement, validationConfig) => {
   if (inputElement.validity.patternMismatch) {
     //если ошибка валидации связана с заданным паттерном
     if (
-      inputElement.classList.contains('popup__input_type_url') ||
-      inputElement.classList.contains('popup__input_type_url-avatar')
+      inputElement.classList.contains(validationConfig['inputUrlImageClass'])
     ) {
       //если поле с ошибкой — это поле, куда вставляется ссылка на картинку
       inputElement.setCustomValidity(
@@ -94,8 +93,10 @@ function toggleButtonState(inputList, buttonElement, validationConfig) {
   if (hasInvalidInput(inputList)) {
     //если проверка валидации вернула true
     buttonElement.classList.add(validationConfig['inactiveButtonClass']); //добавляем кнопке класс, который делает ее неактивной
+    buttonElement.disabled = true;
   } else
     buttonElement.classList.remove(validationConfig['inactiveButtonClass']); //иначе убираем класс, который делает кнопку неактивной
+    buttonElement.disabled = false;
 }
 
 function clearValidation(formElement, validationConfig) {
@@ -110,6 +111,7 @@ function clearValidation(formElement, validationConfig) {
     validationConfig['submitButtonSelector']
   ); //забираем кнопку текущей формы
   buttonElement.classList.add(validationConfig['inactiveButtonClass']); //добавляем кнопке класс, который делает ее неактивной
+  buttonElement.disabled = true;
 }
 
 export { clearValidation, enableValidation }; //экспортируем функции очищения ошибок и дезактивации кнопки, запуска валидации

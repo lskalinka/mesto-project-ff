@@ -6,20 +6,32 @@ const config = {
   },
 };
 
+function checkResponse(res) {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(`Ошибка ${res.status}`);
+}
+
+function request(url, options) {
+  // принимает два аргумента: урл и объект опций, как и `fetch`
+  return fetch(url, options).then(checkResponse);
+}
+
 function getServerProfile() {
-  return fetch(config['baseUrl'] + '/users/me', {
+  return request(config['baseUrl'] + '/users/me', {
     headers: config['headers'],
   });
 }
 
 function getServerCards() {
-  return fetch(config['baseUrl'] + '/cards', {
+  return request(config['baseUrl'] + '/cards', {
     headers: config['headers'],
   });
 }
 
 function patchServerProfile(inputNameFormProfile, inputDescriptionFormProfile) {
-  return fetch(config['baseUrl'] + '/users/me', {
+  return request(config['baseUrl'] + '/users/me', {
     method: 'PATCH',
     headers: config['headers'],
     body: JSON.stringify({
@@ -30,7 +42,7 @@ function patchServerProfile(inputNameFormProfile, inputDescriptionFormProfile) {
 }
 
 function postServerCard(item) {
-  return fetch(config['baseUrl'] + '/cards', {
+  return request(config['baseUrl'] + '/cards', {
     method: 'POST',
     headers: config['headers'],
     body: JSON.stringify({
@@ -41,28 +53,28 @@ function postServerCard(item) {
 }
 
 function deleteServerCard(item) {
-  return fetch(config['baseUrl'] + '/cards/' + item['_id'], {
+  return request(config['baseUrl'] + '/cards/' + item['_id'], {
     method: 'DELETE',
     headers: config['headers'],
   });
 }
 
 function putServerLike(item) {
-  return fetch(config['baseUrl'] + '/cards/likes/' + item['_id'], {
+  return request(config['baseUrl'] + '/cards/likes/' + item['_id'], {
     method: 'PUT',
     headers: config['headers'],
   });
 }
 
 function deleteServerLike(item) {
-  return fetch(config['baseUrl'] + '/cards/likes/' + item['_id'], {
+  return request(config['baseUrl'] + '/cards/likes/' + item['_id'], {
     method: 'DELETE',
     headers: config['headers'],
   });
 }
 
 function patchServerAvatar(link) {
-  return fetch(config['baseUrl'] + '/users/me/avatar', {
+  return request(config['baseUrl'] + '/users/me/avatar', {
     method: 'PATCH',
     headers: config['headers'],
     body: JSON.stringify({

@@ -1,7 +1,8 @@
-import { cardTemplate, userName } from './index.js'; //импортируем переменную с шаблоном карточки
 import { deleteServerCard, putServerLike, deleteServerLike } from './api.js';
 
-function createCard(item, deleteCard, likeCard, openFullImage) {
+const cardTemplate = document.querySelector('#card-template').content; //забираем шаблон карточки
+
+function createCard(item, userName, deleteCard, likeCard, openFullImage) {
   const cardElement = cardTemplate.querySelector('.card').cloneNode(true); //клонируем элемент карточки из шаблона в переменную
   const delButton = cardElement.querySelector('.card__delete-button'); //забираем кнопку удаления для карточки
   const cardImg = cardElement.querySelector('.card__image'); //забираем картинку карточки
@@ -31,23 +32,22 @@ function createCard(item, deleteCard, likeCard, openFullImage) {
 
 function deleteCard(button) {
   const card = button.closest('.card');
-  deleteServerCard(card);
-  card.remove(); //удаляем ближайший к кнопке-аргументу элемент карточки
+  deleteServerCard(card)
+    .then(() => {
+      card.remove(); //удаляем ближайший к кнопке-аргументу элемент карточки
+    })
+    .catch((err) => {
+      console.log(err); // выводим ошибку в консоль
+    });
 }
 
 function likeCard(evt) {
   const likeButton = evt.target;
-  likeButton.classList.toggle('card__like-button_is-active'); //переключаем класс постановки лайка
   const card = likeButton.closest('.card');
-  if (likeButton.classList.contains('card__like-button_is-active')) {
+  if (!likeButton.classList.contains('card__like-button_is-active')) {
     putServerLike(card)
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-      })
       .then((result) => {
+        likeButton.classList.toggle('card__like-button_is-active'); //переключаем класс постановки лайка
         const likeAmount = card.querySelector('.card__like-amount');
         likeAmount.textContent = result.likes.length;
       })
@@ -56,13 +56,8 @@ function likeCard(evt) {
       });
   } else {
     deleteServerLike(card)
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        return Promise.reject(`Ошибка: ${res.status}`);
-      })
       .then((result) => {
+        likeButton.classList.toggle('card__like-button_is-active'); //переключаем класс постановки лайка
         const likeAmount = card.querySelector('.card__like-amount');
         likeAmount.textContent = result.likes.length;
       })
